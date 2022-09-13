@@ -8,58 +8,110 @@
 
 <h1>Index</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
 
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-warning alert-dismissible fade show" role="alert">
-        @TempData["Error"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
+<div id="vueData">
+    <p>
+        <button class="btn btn-success" v-on:click="showCreateModal()">Create new</button>
+        <button class="btn btn-primary" v-on:click="refreshData()">Làm mới dữ liệu</button>
+    </p>
+
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th> Id</th>
+                <th>Tên danh mục</th>
+                <th>Ngày tạo</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-for="item in categories">
+                <td>{{item.id}} </td>
+                <td>{{item.name}}</td>
+                <td>{{ new Date((item.createAt)).toLocaleString('en-GB') }} </td>
+                <td>
+                    <a class="btn btn-success" v-bind:href="'/Admin/Category/Edit/' + item.id">Edit</a> |
+                    <button class="btn btn-danger" v-on:click="deleteCategory(item.id)">Delete</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <partial name="_Create"/>
+</div>
+
+
+@section Scripts{
+    <script>
+
+        let noti = new AWN(); //sd awesome-notifications
+        let modalCreate = new bootstrap.Modal("#modalCreate");
+
+        Vue.createApp({
+            data(){
+                return {
+                    categories: [],
+                    cateData:{
+                        id:null,
+                        name:null
+                    }
+                };
+            },
+            methods: {
+                showCreateModal(){
+                    modalCreate.show();
+                },
+
+                deleteCategory(id){
+                    console.log(id);
+                    noti.confirm(
+                     "Xác nhận xóa dữ liệu?",
+                      () => {
+                          noti.async(
+                              axios.get("/Admin/Category/Delete/" + id),
+                              (response) => {
+                                  var data = response.data;
+                                  if(data.success){
+                                        noti.success("Xóa thành công! ");
+                                        //Load du lieu trang index
+                                        this.refreshData();
+                                  }else{
+                                      noti.warning(data.msg);
+                                  }
+
+                              },
+                          );
+                      }
+                    );
+                },
+                refreshData(){
+                    noti.asyncBlock(
+                        //gọi ajax thông qua thư viện axios
+                        axios.get("/Admin/Category/GetAll")
+                        ,
+                        //khi xử lý
+                        (response) => {
+                            console.log(response.data);
+                            this.categories = response.data; //gán sd đc nhận vào data
+                            noti.success("Tải thành công")
+                        }
+                        ,
+                        //Thất bại
+                        (err) => {
+                            console.log(err);
+                            noti.alert("Tải dữ liệu thất bại")
+                        }
+                        ,
+                        //nội dung chờ
+                        "Chờ xíu"
+                    )
+                }
+
+            },
+            mounted() {
+                this.refreshData();
+            }
+        }).mount("#vueData")
+    </script>
 }
-@if (TempData["SuccesMes"] != null)
-{
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        @TempData["SuccesMes"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-}
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Name)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Id)
-            </th>
-            <th>
-                 @Html.DisplayNameFor(model => model.CreateAt)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-             <td>
-                 @Html.DisplayFor(modelItem => item.Id)
-             </td>
-             <td>
-                 @Html.DisplayFor(modelItem => item.CreateAt)
-             </td>
-          
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id" onclick="return confirm('Xác nhận xóa')">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+

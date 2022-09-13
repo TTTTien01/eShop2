@@ -17,15 +17,22 @@ namespace eShop.Areas.Admin.Controllers
 		{
 			_mapper = mapper;
 		}
+
 		public IActionResult Index()
+		{
+			return View();	
+		}
+
+		public List<ListItemCategoryVM> GetAll()
 		{
 			var query = _db.ProductCategories
 				.ProjectTo<ListItemCategoryVM>(AutoMapperProfile.CategoryConfig)
 				.OrderByDescending(c => c.Id);
-			ViewBag.Sql = query.ToQueryString();
 			var data = query.ToList();
-			return View("Index", data);
+
+			return data;
 		}
+
 		public IActionResult Create() => View();//đối hàm có hàm return có thể viết giống như này 
 
 		[HttpPost]
@@ -52,21 +59,26 @@ namespace eShop.Areas.Admin.Controllers
 			//Không ch xóa nếu DM đã có sản phẩm 
 			if(_db.Products.Any(p => p.CategoryId == id))
 			{
-				//gửi dl chỉ 1 lần
-				TempData["Error"] = "Danh mục đã được sử dụng, không thể xóa";
-				
-				return RedirectToAction(nameof(Index));
-			}	
-
-			var category = _db.ProductCategories.Find(id);
-			if (category != null)
-			{
-				TempData["SuccesMes"] = "Xóa thành công";
-				_db.ProductCategories.Remove(category);
-				_db.SaveChanges();
+				return Ok(new
+				{
+					success = false,
+					msg = "Không được xóa vì danh mục đã được sử dụng"
+				});
 			}
-			//
-			return RedirectToAction(nameof(Index));
+			else
+			{
+				var category = _db.ProductCategories.Find(id);
+				if (category != null)
+				{
+					TempData["SuccesMes"] = "Xóa thành công";
+					_db.ProductCategories.Remove(category);
+					_db.SaveChanges();
+				}
+				return Ok(new
+				{
+					success = true,
+				});
+			}
 		}
 		
 		public IActionResult Edit(int id)
