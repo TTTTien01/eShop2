@@ -35,13 +35,18 @@ namespace eShop.Areas.Admin.Controllers
 
 		public IActionResult Create() => View();//đối hàm có hàm return có thể viết giống như này 
 
+
 		[HttpPost]
-		public IActionResult Create(AddOrUpdateCategoryVM categoryVM, ProductCategory category)
+		public IActionResult Create([FromBody] AddOrUpdateCategoryVM categoryVM, ProductCategory category)
 		{
 			//xac thuc du lieu
 			if (ModelState.IsValid == false)
 			{
-				return View(categoryVM);
+				return Ok(new
+				{
+					success = false,
+					msg = "Không được xóa vì danh mục đã được sử dụng"
+				});
 			}
 			//luu vao db
 			//var category = new ProductCategory();//tao bien moi de lk voi view model
@@ -51,8 +56,12 @@ namespace eShop.Areas.Admin.Controllers
 			category.UpdatedAt = DateTime.Now;
 			_db.ProductCategories.Add(category);
 			_db.SaveChanges();
-			return RedirectToAction(nameof(Index));
+			return Ok(new
+			{
+				success = true,
+			});
 		}
+
 
 		public IActionResult Delete(int id)
 		{
@@ -89,12 +98,24 @@ namespace eShop.Areas.Admin.Controllers
 			return View(category);
 		}
 
+		public IActionResult GetForUpdate(int id)
+		{
+			var category = _db.ProductCategories
+				.ProjectTo<AddOrUpdateCategoryVM>(AutoMapperProfile.CategoryConfig)
+				.FirstOrDefault(c => c.Id == id);
+			return Ok(category);
+		}
+
 		[HttpPost]
-		public IActionResult Edit(int id, AddOrUpdateCategoryVM categoryVM)
+		public IActionResult Edit(int id,[FromBody] AddOrUpdateCategoryVM categoryVM)
 		{
 			if(!ModelState.IsValid)
 			{
-				return View(categoryVM);
+				return Ok(new
+				{
+					success = false,
+					msg = "Không cập nhật được"
+				});
 			}
 			var category = _db.ProductCategories.Find(id);
 
@@ -104,8 +125,11 @@ namespace eShop.Areas.Admin.Controllers
 				category.UpdatedAt = DateTime.Now;
 				_db.SaveChanges();
 			}
-			return RedirectToAction(nameof(Index));
-			
+			return Ok(new
+			{
+				success = true,
+			});
+
 		}
 	}
  }

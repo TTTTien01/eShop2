@@ -31,7 +31,7 @@
                 <td>{{item.name}}</td>
                 <td>{{ new Date((item.createAt)).toLocaleString('en-GB') }} </td>
                 <td>
-                    <a class="btn btn-success" v-bind:href="'/Admin/Category/Edit/' + item.id">Edit</a> |
+                    <button class="btn btn-success me-1" v-on:click="getDataForUpdate(item.id)">Sửa</button> 
                     <button class="btn btn-danger" v-on:click="deleteCategory(item.id)">Delete</button>
                 </td>
             </tr>
@@ -45,21 +45,67 @@
     <script>
 
         let noti = new AWN(); //sd awesome-notifications
-        let modalCreate = new bootstrap.Modal("#modalCreate");
 
         Vue.createApp({
             data(){
                 return {
+                    action:'', 
+                    mCreate: null,
                     categories: [],
                     cateData:{
-                        id:null,
+                        id: 0,
                         name:null
                     }
                 };
             },
             methods: {
                 showCreateModal(){
-                    modalCreate.show();
+                    this.mCreate.show();
+                    this.cateData.id = 0;
+                    this.cateData.name = null;
+                    this.action ="Thêm mới";
+                },
+
+                getDataForUpdate(id){
+                    noti.async(
+                        axios.get("/Admin/Category/GetForUpdate/" + id),
+                        (response) => {
+                            var data = response.data;
+                            this.cateData = {...data};//coppy data
+                            this.mCreate.show();
+                            this.action = "Cập nhật";
+                            
+
+                        }
+                    );
+                },
+
+                addOrUpdate(){
+                    if (!this.cateData.name){
+                        noti.warning("Chưa nhập dữ liệu");
+                        return;
+                    }
+                    let url = "/Admin/Category/Create";
+                    if (this.cateData.id != 0)
+                    {
+                        url = "/Admin/Category/Edit/"+this.cateData.id;
+                    }
+                    noti.async(
+                        axios.post(url, this.cateData),
+                        (response) => {
+                            var data = response.data;
+                            if (data.success) {
+                                noti.success(this.action + " danh mục thành công! ");
+                                this.mCreate.hide();//tắt modal
+                                
+                                //Load du lieu trang index
+                                this.refreshData();
+                            } else {
+                                noti.warning(data.msg);
+                            }
+
+                        }
+                    );
                 },
 
                 deleteCategory(id){
@@ -108,7 +154,8 @@
                 }
 
             },
-            mounted() {
+            mounted() { 
+                this.mCreate = new bootstrap.Modal("#modalCreate");
                 this.refreshData();
             }
         }).mount("#vueData")
