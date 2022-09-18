@@ -5,6 +5,7 @@ using eShop.Database;
 using eShop.Database.Entities;
 using eShop.WebConfigs;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
 
 namespace eShop.Areas.Admin.Controllers
@@ -18,10 +19,28 @@ namespace eShop.Areas.Admin.Controllers
 			_mapper = mapper;
 		}
 
+
+		public override void OnActionExecuting(ActionExecutingContext context)
+		{
+			var method = context.HttpContext.Request.Method;
+			if (method == HttpMethod.Post.Method)
+			{
+				if (!ModelState.IsValid )
+				{
+					var x = ModelState.Values.Where(x => x.Errors.Where(y => !String.IsNullOrEmpty(y.ErrorMessage)).Count() > 0).ToList();
+					var errModel = new SerializableError(ModelState);
+					context.Result = new BadRequestObjectResult(errModel);
+				}
+			}
+		}
+
+
 		public IActionResult Index()
 		{
 			return View();	
 		}
+
+
 
 		public List<ListItemCategoryVM> GetAll()
 		{
@@ -33,7 +52,6 @@ namespace eShop.Areas.Admin.Controllers
 			return data;
 		}
 
-		public IActionResult Create() => View();//đối hàm có hàm return có thể viết giống như này 
 
 
 		[HttpPost]
@@ -45,7 +63,7 @@ namespace eShop.Areas.Admin.Controllers
 				return Ok(new
 				{
 					success = false,
-					msg = "Không được xóa vì danh mục đã được sử dụng"
+					msg = "Thêm thất bại"
 				});
 			}
 			//luu vao db
@@ -61,6 +79,7 @@ namespace eShop.Areas.Admin.Controllers
 				success = true,
 			});
 		}
+
 
 
 		public IActionResult Delete(int id)
@@ -89,14 +108,9 @@ namespace eShop.Areas.Admin.Controllers
 				});
 			}
 		}
-		
-		public IActionResult Edit(int id)
-		{
-			var category = _db.ProductCategories
-				.ProjectTo<AddOrUpdateCategoryVM>(AutoMapperProfile.CategoryConfig)
-				.FirstOrDefault(c => c.Id ==id);
-			return View(category);
-		}
+
+
+
 
 		public IActionResult GetForUpdate(int id)
 		{
@@ -105,6 +119,9 @@ namespace eShop.Areas.Admin.Controllers
 				.FirstOrDefault(c => c.Id == id);
 			return Ok(category);
 		}
+
+
+
 
 		[HttpPost]
 		public IActionResult Edit(int id,[FromBody] AddOrUpdateCategoryVM categoryVM)

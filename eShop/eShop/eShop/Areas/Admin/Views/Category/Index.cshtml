@@ -29,7 +29,7 @@
             <tr v-for="item in categories">
                 <td>{{item.id}} </td>
                 <td>{{item.name}}</td>
-                <td>{{ new Date((item.createAt)).toLocaleString('en-GB') }} </td>
+                <td>{{new Date(item.createAt).toLocaleString()}} </td>
                 <td>
                     <button class="btn btn-success me-1" v-on:click="getDataForUpdate(item.id)">Sửa</button> 
                     <button class="btn btn-danger" v-on:click="deleteCategory(item.id)">Delete</button>
@@ -44,6 +44,12 @@
 @section Scripts{
     <script>
 
+        let options ={
+           minDurations: {
+               "async-block":300,
+               "async":300
+           }
+        };
         let noti = new AWN(); //sd awesome-notifications
 
         Vue.createApp({
@@ -61,8 +67,7 @@
             methods: {
                 showCreateModal(){
                     this.mCreate.show();
-                    this.cateData.id = 0;
-                    this.cateData.name = null;
+                    this.clearData();
                     this.action ="Thêm mới";
                 },
 
@@ -78,6 +83,11 @@
 
                         }
                     );
+                },
+
+                clearData(){
+                    this.cateData.id = 0;
+                    this.cateData.name = '';
                 },
 
                 addOrUpdate(){
@@ -96,14 +106,27 @@
                             var data = response.data;
                             if (data.success) {
                                 noti.success(this.action + " danh mục thành công! ");
-                                this.mCreate.hide();//tắt modal
+                                this.mCreate.hide();//tắt(ẩn) modal
                                 
                                 //Load du lieu trang index
                                 this.refreshData();
-                            } else {
-                                noti.warning(data.msg);
+                            } 
+                        },
+                        (err)=>{
+                            let statusCode = err.response.status;
+                            if(statusCode == 400)
+                            {
+                                var errRes = err.response.data;
+                                for(let prop in errRes){
+                                    for(let mesg of errRes[prop]){
+                                        noti.alert(mesg);
+                                        return;
+                                            
+                                    } 
+                                }
+                            
                             }
-
+                            
                         }
                     );
                 },
