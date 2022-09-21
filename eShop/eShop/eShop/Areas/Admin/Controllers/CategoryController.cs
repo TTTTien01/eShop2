@@ -27,7 +27,9 @@ namespace eShop.Areas.Admin.Controllers
 			{
 				if (!ModelState.IsValid )
 				{
-					var x = ModelState.Values.Where(x => x.Errors.Where(y => !String.IsNullOrEmpty(y.ErrorMessage)).Count() > 0).ToList();
+					var x = ModelState.Values.Where(x => x.Errors
+					.Where(y => !String.IsNullOrEmpty(y.ErrorMessage))
+					.Count() > 0).ToList();
 					var errModel = new SerializableError(ModelState);
 					context.Result = new BadRequestObjectResult(errModel);
 				}
@@ -55,7 +57,7 @@ namespace eShop.Areas.Admin.Controllers
 
 
 		[HttpPost]
-		public IActionResult Create([FromBody] AddOrUpdateCategoryVM categoryVM, ProductCategory category)
+		public IActionResult Create([FromBody] AddOrUpdateCategoryVM categoryVM,ProductCategory category)
 		{
 			//xac thuc du lieu
 			if (ModelState.IsValid == false)
@@ -84,7 +86,7 @@ namespace eShop.Areas.Admin.Controllers
 
 		public IActionResult Delete(int id)
 		{
-			//Không ch xóa nếu DM đã có sản phẩm 
+			//Không cho xóa nếu DM đã có sản phẩm 
 			if(_db.Products.Any(p => p.CategoryId == id))
 			{
 				return Ok(new
@@ -98,7 +100,6 @@ namespace eShop.Areas.Admin.Controllers
 				var category = _db.ProductCategories.Find(id);
 				if (category != null)
 				{
-					TempData["SuccesMes"] = "Xóa thành công";
 					_db.ProductCategories.Remove(category);
 					_db.SaveChanges();
 				}

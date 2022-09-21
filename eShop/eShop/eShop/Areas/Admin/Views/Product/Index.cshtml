@@ -1,0 +1,201 @@
+﻿@using eShop.Areas.Admin.ViewModels.Product
+
+@model IEnumerable<ListItemProductVM>
+
+@{
+    ViewData["Title"] = "Index";
+}
+<h1>Index Product</h1>
+
+
+<div id="vueDataProduct">
+    <p>
+        <button class="btn btn-success" v-on:click="showCreateModal()">Create new</button>
+        <button class="btn btn-primary" v-on:click="refreshData()">Làm mới dữ liệu</button>
+    </p>
+
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th> Id</th>
+                <th>Tên san pham</th>
+                <th>Mô ta</th>
+                <th>Giá</th>
+                <th>Giam gia</th>
+                <th>hinh anh</th>
+                <th>Ton kho</th>
+                <th>Danh muc</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-for="item in products">
+                <td>{{item.id}} </td>
+                <td>{{item.name}}</td>
+                <td>{{item.description}}</td>
+                <td>{{item.price}}</td>
+                <td>{{item.discountPrice}}</td>
+                <td>{{item.coverImg}}</td>
+                <td>{{item.inStock}}</td>
+                <td>{{item.categoryId}}</td>
+                <td>{{new Date(item.createAt).toLocaleString()}} </td>
+                <td>
+                    <button class="btn btn-success me-1" v-on:click="getDataForUpdate(item.id)">Sửa</button>
+                    <button class="btn btn-danger" v-on:click="deleteCategory(item.id)">Delete</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <partial name="_CreateProduct"/>
+</div>
+
+@section Scripts{
+    <script>
+        let options = {
+            minDurations: {
+                "async-block": 300,
+                "async": 300
+            }
+        };
+
+        let noti = new AWN();
+        Vue.createApp
+        ({
+            data(){
+                return{
+                    action:'',
+                    modelCreateProduct: null,
+                    products: [],
+                    cateData:{
+                        id : 0,
+                        name :null,
+                        description: null,
+                         price: null,
+                         discountPrice: null,
+                         coverImg: null,
+                         inStock: null,
+                         categoryId: null,
+                    }
+                };
+            },
+
+            methods:{
+                showCreateModal(){
+                    this.modelCreateProduct.show();
+                    this.clearData();
+                    this.action = "Them moi";
+                },
+
+                getDataForUpdate(id) {
+                    noti.async(
+                        axios.get("/Admin/Product/GetForUpdate/" + id),
+                        (response) => {
+                            var data = response.data;
+                            this.cateData = { ...data };
+                            this.modelCreateProduct.show();
+                            this.action = "Cập nhật";
+                        }
+                    );
+                },
+
+                clearData(){
+                    this.cateData.id = 0;
+                    this.cateData.name = '';
+                    this.cateData.description = '';
+                    this.cateData.price = '';
+                    this.cateData.discountPrice = '';
+                    this.cateData.coverImg = '';
+                    this.cateData.inStock = '';
+                    this.cateData.categoryId = '';
+                },
+
+                addOrUpdate(){
+                    if (!this.cateData.name) {
+                        noti.warning("Chưa nhập dữ liệu");
+                        return;
+                    }
+                    let url = "/Admin/Product/CreateProduct";
+                    if (this.cateData.id != 0) {
+                        url = "/Admin/Product/EditProduct/" + this.cateData.id;
+                    }
+                    noti.async(
+                        axios.post(url, this.cateData),
+                        (response) => {
+                            var data = response.data;
+                            if (data.success) {
+                                noti.success(this.action + " san pham thành công! ");
+                                this.modelCreateProduct.hide();
+                                this.refreshData();
+                            }
+                        },
+                        (err) => {
+                            let statusCode = err.response.status;
+                            if (statusCode == 400) {
+                                var errRes = err.response.data;
+                                for (let prop in errRes) {
+                                    for (let msg of errRes[prop]) {
+                                        noti.alert(msg);
+                                        return;
+
+                                    }
+                                }
+
+                            }
+
+                        }
+                    );
+                },
+
+
+                deleteProduct(id){
+                    console.log(id);
+                    noti.confirm(
+                        "Xác nhận xóa dữ liệu?",
+                        () => {
+                            noti.async(
+                                axios.get("/Admin/Product/DeleteProduct/" + id),
+                                (response) => {
+                                    var data = response.data;
+                                    if (data.success) {
+                                        noti.success("Xóa thành công! ");
+                                        //Load du lieu trang index
+                                        this.refreshData();
+                                    } else {
+                                        noti.warning(data.msg);
+                                    }
+
+                                },
+                            );
+                        }
+                    );
+                },
+
+
+                refreshData() {
+                    noti.asyncBlock(
+                        axios.get("/Admin/Product/GetAll"),
+
+                        (response) => {
+                            console.log(response.data);
+                            this.products = response.data; 
+                            noti.success("Tải thành công")
+                        },
+
+                        (err) => {
+                            console.log(err);
+                            noti.alert("Tải dữ liệu thất bại")
+                        },
+
+                        "Chờ xíu"
+                    )
+                }
+            },
+             mounted() {
+                this.modelCreateProduct = new bootstrap.Modal("#modalCreate");
+                this.refreshData();
+            }
+        }).mount("#vueDataProduct")
+
+    </script>
+} 
