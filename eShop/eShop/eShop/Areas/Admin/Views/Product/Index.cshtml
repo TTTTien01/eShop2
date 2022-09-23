@@ -38,11 +38,11 @@
                 <td>{{item.discountPrice}}</td>
                 <td>{{item.coverImg}}</td>
                 <td>{{item.inStock}}</td>
-                <td>{{item.categoryId}}</td>
+                <td>{{item.categoryId => item.Category.name ??}}</td>
                 <td>{{new Date(item.createAt).toLocaleString()}} </td>
                 <td>
                     <button class="btn btn-success me-1" v-on:click="getDataForUpdate(item.id)">Sửa</button>
-                    <button class="btn btn-danger" v-on:click="deleteCategory(item.id)">Delete</button>
+                    <button class="btn btn-danger" v-on:click="deleteProduct(item.id)">Delete</button>
                 </td>
             </tr>
         </tbody>
@@ -84,12 +84,12 @@
                 showCreateModal(){
                     this.modelCreateProduct.show();
                     this.clearData();
-                    this.action = "Them moi";
+                    this.action = "Thêm mới";
                 },
 
                 getDataForUpdate(id) {
                     noti.async(
-                        axios.get("/Admin/Product/GetForUpdate/" + id),
+                        axios.get("/Admin/Product/GetForUpdateProduct/" + id),
                         (response) => {
                             var data = response.data;
                             this.cateData = { ...data };
@@ -116,7 +116,8 @@
                         return;
                     }
                     let url = "/Admin/Product/CreateProduct";
-                    if (this.cateData.id != 0) {
+                    if (this.cateData.id != 0) 
+                    {
                         url = "/Admin/Product/EditProduct/" + this.cateData.id;
                     }
                     noti.async(
@@ -124,7 +125,7 @@
                         (response) => {
                             var data = response.data;
                             if (data.success) {
-                                noti.success(this.action + " san pham thành công! ");
+                                noti.success(this.action + " sản phẩm thành công! ");
                                 this.modelCreateProduct.hide();
                                 this.refreshData();
                             }

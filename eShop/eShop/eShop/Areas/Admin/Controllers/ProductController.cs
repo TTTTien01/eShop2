@@ -50,7 +50,6 @@ namespace eShop.Areas.Admin.Controllers
 				.ProjectTo<ListItemProductVM>(AutoMapperProfile.ProductConfig)
 				.OrderByDescending(p => p.Id);
 			var data = query.ToList();
-
 			return data;
 		}
 
@@ -79,9 +78,9 @@ namespace eShop.Areas.Admin.Controllers
 		}
 
 
-		public IActionResult DeleteProduct(int id, Product product)
+		public IActionResult DeleteProduct(int id)
 		{
-			_db.Products.Find(id);	
+			var product = _db.Products.Find(id);	
 			if(product != null)
 			{
 				_db.Products.Remove(product);
@@ -95,26 +94,27 @@ namespace eShop.Areas.Admin.Controllers
 
 
 
-		public IActionResult GetForUpdateProduct(int id, Product product)
+		public IActionResult GetForUpdateProduct(int id)
 		{
-			_db.Products.ProjectTo<ListItemProductVM>(AutoMapperProfile.ProductConfig)	
+			var product =_db.Products
+				.ProjectTo<AddOrUpdateProductVM>(AutoMapperProfile.ProductConfig)	
 				.FirstOrDefault(p =>p.Id == id);
 			return Ok(product);
 		}
 
 
 		[HttpPost]
-		public IActionResult EditProduct(int id, [FromBody]AddOrUpdateProductVM productVM, Product product)
+		public IActionResult EditProduct(int id, [FromBody] AddOrUpdateProductVM productVM)
 		{
-			if(ModelState.IsValid )
+			if(!ModelState.IsValid )
 			{
 				return Ok(new
 				{
 					success = false,
-					msg = "Update that bai!!!"
+					msg = "Cập nhật thất bại, vui lòng thử lại!!!"
 				});
 			}
-			 _db.Products.Find(id);
+			var product =  _db.Products.Find(id);
 			if(product != null)
 			{
 				_mapper.Map(productVM, product);
@@ -123,9 +123,8 @@ namespace eShop.Areas.Admin.Controllers
 			}
 			return Ok(new
 			{
-				success = true
+				success = true,
 			});
-
 		}
 	}
 }

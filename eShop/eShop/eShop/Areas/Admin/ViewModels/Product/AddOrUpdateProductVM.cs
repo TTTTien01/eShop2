@@ -13,16 +13,16 @@ namespace eShop.Areas.Admin.ViewModels.Product
         [DisplayName("Tên sản phẩm")]
         public string? Name { get; set; }
 
-		//[MinLength(3, ErrorMessage = "{0} không được ít hơn 3 kí tự")]
+		[MinLength(3, ErrorMessage = "{0} không được ít hơn 3 kí tự")]
 		[DisplayName("Mô tả sản phẩm")]
 		public string? Description { get; set; }//mô tả
 
-		//[Required(ErrorMessage = "{0} là bắt buộc")]
-		//[MinLength(4, ErrorMessage = "{0} không được ít hơn 4 chữ số")]
+		[Required(ErrorMessage = "{0} là bắt buộc")]
+		[MinLength(4, ErrorMessage = "{0} không được ít hơn 4 chữ số")]
 		[DisplayName("Giá")]
 		public string? Price { get; set; }
 
-		//[MinLength(1, ErrorMessage = "{0} không được ít hơn 1 chữ số")]
+		[MinLength(1, ErrorMessage = "{0} không được ít hơn 1 chữ số")]
 		[DisplayName("Giảm giá")]
 		public string? DiscountPrice { get; set; }//giảm giá
 
