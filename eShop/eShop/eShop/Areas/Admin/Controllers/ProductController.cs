@@ -26,9 +26,6 @@ namespace eShop.Areas.Admin.Controllers
 			{
 				if(!ModelState.IsValid)
 				{
-					var x = ModelState.Values.Where(x => x.Errors
-					.Where(y => !String.IsNullOrEmpty(y.ErrorMessage))
-					.Count() > 0).ToList();
 					var errModel = new SerializableError(ModelState);
 					context.Result = new BadRequestObjectResult(errModel);
 				}
@@ -55,18 +52,9 @@ namespace eShop.Areas.Admin.Controllers
 
 
 		[HttpPost]
-		public IActionResult CreateProduct([FromBody] AddOrUpdateProductVM productVM, Product product)
+		public IActionResult CreateProduct([FromBody] AddOrUpdateProductVM productVM)
 		{
-			if(ModelState.IsValid == false)
-			{
-				return Ok(new
-				{
-					success = false,
-					msg = "Them san pham that bai!!!!!"
-				});
-			}
-
-			_mapper.Map(productVM,product);
+			var product = _mapper.Map<Product>(productVM);
 			product.CreatedAt = DateTime.Now;	
 			product.UpdatedAt = DateTime.Now;
 			_db.Products.Add(product);

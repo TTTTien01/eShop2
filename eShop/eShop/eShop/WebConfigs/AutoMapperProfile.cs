@@ -24,8 +24,10 @@ namespace eShop.WebConfigs
 		public static MapperConfiguration ProductConfig = new MapperConfiguration(opt =>
 		{
 			opt.CreateMap<Product, AddOrUpdateProductVM>();
-			opt.CreateMap<Product, ListItemProductVM>();
+			opt.CreateMap<Product, ListItemProductVM>()
+			.ForMember(vm => vm.CategoryName, opt => opt.MapFrom(entity => entity.ProductCategory == null ? "" : entity.ProductCategory.Name));
 		});
 
+		
     }
 }

@@ -38,7 +38,7 @@
                 <td>{{item.discountPrice}}</td>
                 <td>{{item.coverImg}}</td>
                 <td>{{item.inStock}}</td>
-                <td>{{item.categoryId => item.Category.name ??}}</td>
+                <td>{{item.categoryName}}</td>
                 <td>{{new Date(item.createAt).toLocaleString()}} </td>
                 <td>
                     <button class="btn btn-success me-1" v-on:click="getDataForUpdate(item.id)">Sửa</button>
@@ -48,6 +48,7 @@
         </tbody>
     </table>
     <partial name="_CreateProduct"/>
+    
 </div>
 
 @section Scripts{
@@ -67,9 +68,9 @@
                     action:'',
                     modelCreateProduct: null,
                     products: [],
-                    cateData:{
+                    spData:{
                         id : 0,
-                        name :null,
+                        name :'',
                         description: null,
                          price: null,
                          discountPrice: null,
@@ -92,7 +93,7 @@
                         axios.get("/Admin/Product/GetForUpdateProduct/" + id),
                         (response) => {
                             var data = response.data;
-                            this.cateData = { ...data };
+                            this.spData = { ...data };
                             this.modelCreateProduct.show();
                             this.action = "Cập nhật";
                         }
@@ -100,28 +101,28 @@
                 },
 
                 clearData(){
-                    this.cateData.id = 0;
-                    this.cateData.name = '';
-                    this.cateData.description = '';
-                    this.cateData.price = '';
-                    this.cateData.discountPrice = '';
-                    this.cateData.coverImg = '';
-                    this.cateData.inStock = '';
-                    this.cateData.categoryId = '';
+                    this.spData.id = 0;
+                    this.spData.name = '';
+                    this.spData.description = '';
+                    this.spData.price = '';
+                    this.spData.discountPrice = '';
+                    this.spData.coverImg = '';
+                    this.spData.inStock = '';
+                    this.spData.categoryId = '';
                 },
 
                 addOrUpdate(){
-                    if (!this.cateData.name) {
+                    if (!this.spData.name) {
                         noti.warning("Chưa nhập dữ liệu");
                         return;
                     }
                     let url = "/Admin/Product/CreateProduct";
-                    if (this.cateData.id != 0) 
+                    if (this.spData.id != 0) 
                     {
-                        url = "/Admin/Product/EditProduct/" + this.cateData.id;
+                        url = "/Admin/Product/EditProduct/" + this.spData.id;
                     }
                     noti.async(
-                        axios.post(url, this.cateData),
+                            axios.post(url, this.spData),
                         (response) => {
                             var data = response.data;
                             if (data.success) {

@@ -12,43 +12,43 @@
                         <div class="mt-2">
                             <label class="control-label">Tên san pham</label>
                             <input class="form-control" v-model="cateData.name" />
-                            {{cateData.name}}
+
                         </div>
 
                         <div class="mt-2">
                             <label class="control-label">Mo ta</label>
                             <input class="form-control" v-model="cateData.description" />
-                            {{cateData.description}}
+
                         </div>
 
                         <div class="mt-2">
                             <label class="control-label">Gia</label>
                             <input class="form-control" v-model="cateData.price" />
-                            {{cateData.price}}
+
                         </div>
 
                         <div class="mt-2">
                             <label class="control-label">Giam gia</label>
                             <input class="form-control" v-model="cateData.discountPrice" />
-                            {{cateData.discountPrice}}
+
                         </div>
 
                         <div class="mt-2">
                             <label class="control-label">Hinh anh</label>
                             <input class="form-control" v-model="cateData.coverImg" />
-                            {{cateData.coverImg}}
+
                         </div>
 
                         <div class="mt-2">
                             <label class="control-label">Ton kho</label>
                             <input class="form-control" v-model="cateData.inStock" />
-                            {{cateData.inStock}}
+
                         </div>
 
                         <div class="mt-2">
                             <label class="control-label">Danh muc</label>
-                            <input class="form-control" v-model="cateData.categoryId" />
-                            {{cateData.categoryId}}
+                            <vc:select-list-category v-model="cateData.categoryId"></vc:select-list-category>
+
                         </div>
 
                         <div class="mt-2 d-flex justify-content-end">

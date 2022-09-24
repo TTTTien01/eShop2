@@ -19,5 +19,7 @@
 		public int? CategoryId { get; set; }
 
 		public DateTime? CreateAt { get; set; }
+
+		public string CategoryName { get; set; }
     }
 }
